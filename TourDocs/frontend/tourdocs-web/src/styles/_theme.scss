@@ -1,0 +1,110 @@
+@use '@angular/material' as mat;
+
+$td-primary-palette: (
+  50: #E3F2FD,
+  100: #BBDEFB,
+  200: #90CAF9,
+  300: #64B5F6,
+  400: #42A5F5,
+  500: #1565C0,
+  600: #1258A7,
+  700: #0D47A1,
+  800: #0A3A85,
+  900: #062E6A,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: #FFFFFF,
+    600: #FFFFFF,
+    700: #FFFFFF,
+    800: #FFFFFF,
+    900: #FFFFFF,
+  )
+);
+
+$td-accent-palette: (
+  50: #E0F2F1,
+  100: #B2DFDB,
+  200: #80CBC4,
+  300: #4DB6AC,
+  400: #26A69A,
+  500: #00897B,
+  600: #00796B,
+  700: #00695C,
+  800: #00574B,
+  900: #004D40,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: #FFFFFF,
+    500: #FFFFFF,
+    600: #FFFFFF,
+    700: #FFFFFF,
+    800: #FFFFFF,
+    900: #FFFFFF,
+  )
+);
+
+$td-warn-palette: (
+  50: #FFEBEE,
+  100: #FFCDD2,
+  200: #EF9A9A,
+  300: #E57373,
+  400: #EF5350,
+  500: #F44336,
+  600: #E53935,
+  700: #D32F2F,
+  800: #C62828,
+  900: #B71C1C,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: #FFFFFF,
+    500: #FFFFFF,
+    600: #FFFFFF,
+    700: #FFFFFF,
+    800: #FFFFFF,
+    900: #FFFFFF,
+  )
+);
+
+$td-primary: mat.m2-define-palette($td-primary-palette, 500, 300, 700);
+$td-accent: mat.m2-define-palette($td-accent-palette, 500, 300, 700);
+$td-warn: mat.m2-define-palette($td-warn-palette, 500, 300, 700);
+
+$td-light-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $td-primary,
+    accent: $td-accent,
+    warn: $td-warn,
+  ),
+  typography: mat.m2-define-typography-config(
+    $font-family: "'Inter', 'Roboto', sans-serif",
+  ),
+  density: 0,
+));
+
+$td-dark-theme: mat.m2-define-dark-theme((
+  color: (
+    primary: $td-primary,
+    accent: $td-accent,
+    warn: $td-warn,
+  ),
+  typography: mat.m2-define-typography-config(
+    $font-family: "'Inter', 'Roboto', sans-serif",
+  ),
+  density: 0,
+));
+
+@include mat.all-component-themes($td-light-theme);
+
+.dark-theme {
+  @include mat.all-component-colors($td-dark-theme);
+}

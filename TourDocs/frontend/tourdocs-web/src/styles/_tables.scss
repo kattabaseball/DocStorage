@@ -1,0 +1,146 @@
+@use 'variables' as *;
+
+.td-table-container {
+  background: $bg-card;
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
+  overflow: hidden;
+
+  .td-table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid $border-color;
+    flex-wrap: wrap;
+    gap: 12px;
+
+    .td-table-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #263238;
+      margin: 0;
+    }
+
+    .td-table-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+}
+
+.mat-mdc-table {
+  width: 100%;
+  background: transparent;
+
+  .mat-mdc-header-row {
+    background: $bg-light;
+    height: 48px;
+
+    .mat-mdc-header-cell {
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #546E7A;
+      border-bottom: 2px solid $border-color;
+      padding: 0 16px;
+    }
+  }
+
+  .mat-mdc-row {
+    height: 56px;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: rgba($td-primary-500, 0.04);
+    }
+
+    &:nth-child(even) {
+      background-color: rgba(0, 0, 0, 0.01);
+
+      &:hover {
+        background-color: rgba($td-primary-500, 0.04);
+      }
+    }
+
+    .mat-mdc-cell {
+      padding: 0 16px;
+      font-size: 14px;
+      color: #37474F;
+      border-bottom: 1px solid $border-color;
+    }
+  }
+
+  .mat-column-actions {
+    width: 120px;
+    text-align: right;
+  }
+}
+
+.status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 16px;
+
+  &--uploaded {
+    background: rgba($status-uploaded, 0.12);
+    color: darken($status-uploaded, 15%);
+  }
+
+  &--reviewing {
+    background: rgba($status-reviewing, 0.12);
+    color: darken($status-reviewing, 15%);
+  }
+
+  &--verified {
+    background: rgba($status-verified, 0.12);
+    color: darken($status-verified, 15%);
+  }
+
+  &--rejected {
+    background: rgba($status-rejected, 0.12);
+    color: darken($status-rejected, 15%);
+  }
+
+  &--expired {
+    background: rgba($status-expired, 0.12);
+    color: darken($status-expired, 30%);
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--uploaded { background: $status-uploaded; }
+    &--reviewing { background: $status-reviewing; }
+    &--verified { background: $status-verified; }
+    &--rejected { background: $status-rejected; }
+    &--expired { background: $status-expired; }
+  }
+}
+
+.mat-mdc-paginator {
+  border-top: 1px solid $border-color;
+  background: $bg-light;
+}
+
+.table-loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}

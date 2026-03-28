@@ -1,0 +1,196 @@
+# =============================================================================
+# TourDocs CD Pipeline
+# Continuous Deployment - Build, Push, Deploy
+# =============================================================================
+
+name: CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+      - ".editorconfig"
+      - ".gitignore"
+
+env:
+  REGISTRY: ghcr.io
+  API_IMAGE_NAME: ${{ github.repository }}/tourdocs-api
+  WEB_IMAGE_NAME: ${{ github.repository }}/tourdocs-web
+
+concurrency:
+  group: cd-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ===========================================================================
+  # Build and Push Docker Images
+  # ===========================================================================
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      api-image-tag: ${{ steps.meta-api.outputs.tags }}
+      web-image-tag: ${{ steps.meta-web.outputs.tags }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate version
+        id: version
+        run: |
+          VERSION=$(date +'%Y.%m.%d')-${GITHUB_SHA::7}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract API image metadata
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=latest
+
+      - name: Extract Web image metadata
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=latest
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          build-args: |
+            API_URL=${{ vars.PRODUCTION_API_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===========================================================================
+  # Run Database Migrations
+  # ===========================================================================
+  migrate-database:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: [build-and-push]
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Generate migration script
+        working-directory: backend
+        run: |
+          dotnet ef migrations script \
+            --project src/TourDocs.Data \
+            --startup-project src/TourDocs.API \
+            --idempotent \
+            --output migrations.sql
+
+      - name: Upload migration script
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-script
+          path: backend/migrations.sql
+          retention-days: 30
+
+      # Placeholder: Apply migrations to production database
+      # Replace with your actual database migration strategy
+      - name: Apply migrations
+        run: |
+          echo "::notice::Migration script generated. Apply manually or configure automated migration."
+          echo "Review the migration script artifact before applying to production."
+
+  # ===========================================================================
+  # Deploy
+  # ===========================================================================
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, migrate-database]
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Placeholder: Replace with your deployment strategy
+      # Options:
+      #   - Docker Compose on a VPS (SSH + docker-compose pull + up)
+      #   - Kubernetes (kubectl apply or Helm upgrade)
+      #   - Azure App Service (az webapp deploy)
+      #   - AWS ECS (aws ecs update-service)
+      # -----------------------------------------------------------------------
+      - name: Deploy application
+        run: |
+          echo "::notice::Deploying version ${{ needs.build-and-push.outputs.version }}"
+          echo ""
+          echo "API Image: ${{ env.REGISTRY }}/${{ env.API_IMAGE_NAME }}:${{ needs.build-and-push.outputs.version }}"
+          echo "Web Image: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}:${{ needs.build-and-push.outputs.version }}"
+          echo ""
+          echo "Replace this step with your deployment commands."
+
+      - name: Verify deployment
+        run: |
+          echo "::notice::Verify the deployment at ${{ vars.PRODUCTION_URL }}"
+          echo "Replace this step with health check verification."
+
+      - name: Create deployment summary
+        run: |
+          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ needs.build-and-push.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY

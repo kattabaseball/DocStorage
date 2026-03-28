@@ -1,0 +1,121 @@
+@use 'variables' as *;
+
+.dark-theme {
+  background-color: #1a1a2e;
+  color: #E0E0E0;
+
+  .mat-mdc-card,
+  .widget-card,
+  .stat-card,
+  .form-card,
+  .document-card {
+    background: #16213e;
+    color: #E0E0E0;
+
+    .stat-card__content .stat-card__value {
+      color: #E0E0E0;
+    }
+
+    .stat-card__content .stat-card__label {
+      color: #90A4AE;
+    }
+
+    .widget-card__header .widget-card__title {
+      color: #E0E0E0;
+    }
+
+    .widget-card__header {
+      border-bottom-color: #2a2a4a;
+    }
+
+    .widget-card__footer {
+      background: #12192e;
+      border-top-color: #2a2a4a;
+    }
+
+    .document-card__header .document-card__title {
+      color: #E0E0E0;
+    }
+
+    .document-card__header .document-card__icon {
+      background: rgba($td-primary-500, 0.2);
+    }
+  }
+
+  .td-sidebar {
+    background: #0f0f23;
+  }
+
+  .td-toolbar {
+    background: #16213e;
+    border-bottom-color: #2a2a4a;
+  }
+
+  .td-table-container {
+    background: #16213e;
+
+    .td-table-header {
+      border-bottom-color: #2a2a4a;
+    }
+  }
+
+  .mat-mdc-table {
+    .mat-mdc-header-row {
+      background: #12192e;
+
+      .mat-mdc-header-cell {
+        color: #90A4AE;
+        border-bottom-color: #2a2a4a;
+      }
+    }
+
+    .mat-mdc-row {
+      &:hover {
+        background-color: rgba($td-primary-500, 0.08);
+      }
+
+      &:nth-child(even) {
+        background-color: rgba(255, 255, 255, 0.02);
+      }
+
+      .mat-mdc-cell {
+        color: #CFD8DC;
+        border-bottom-color: #2a2a4a;
+      }
+    }
+  }
+
+  .mat-mdc-paginator {
+    background: #12192e;
+    border-top-color: #2a2a4a;
+  }
+
+  .form-section__title {
+    color: #E0E0E0;
+    border-bottom-color: rgba($td-primary-500, 0.3);
+  }
+
+  .form-actions {
+    border-top-color: #2a2a4a;
+  }
+
+  .auth-form-container .auth-card {
+    background: #16213e;
+
+    .auth-card__logo h1 {
+      color: $td-primary-300;
+    }
+
+    .auth-card__title {
+      color: #E0E0E0;
+    }
+  }
+
+  .page-container {
+    background: #1a1a2e;
+  }
+
+  a {
+    color: $td-primary-300;
+  }
+}

@@ -1,0 +1,228 @@
+@use 'variables' as *;
+
+.stat-card {
+  background: $bg-card;
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
+  padding: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  border-left: 4px solid transparent;
+
+  &:hover {
+    box-shadow: $card-shadow-hover;
+    transform: translateY(-2px);
+  }
+
+  &--primary { border-left-color: $td-primary-500; }
+  &--accent { border-left-color: $td-accent-500; }
+  &--warn { border-left-color: $td-warn-500; }
+  &--success { border-left-color: $status-verified; }
+
+  .stat-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: #FFFFFF;
+    }
+
+    &--primary { background: $td-primary-500; }
+    &--accent { background: $td-accent-500; }
+    &--warn { background: $td-warn-500; }
+    &--success { background: $status-verified; }
+  }
+
+  .stat-card__content {
+    flex: 1;
+
+    .stat-card__label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #78909C;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .stat-card__value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #263238;
+      line-height: 1.2;
+    }
+
+    .stat-card__trend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 500;
+
+      &--up {
+        color: $status-verified;
+      }
+
+      &--down {
+        color: $td-warn-500;
+      }
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}
+
+.widget-card {
+  background: $bg-card;
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: $card-shadow-hover;
+  }
+
+  .widget-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid $border-color;
+
+    .widget-card__title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #263238;
+      margin: 0;
+    }
+
+    .widget-card__actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .widget-card__body {
+    padding: 24px;
+  }
+
+  .widget-card__footer {
+    padding: 12px 24px;
+    border-top: 1px solid $border-color;
+    background: $bg-light;
+  }
+}
+
+.document-card {
+  background: $bg-card;
+  border-radius: $border-radius;
+  box-shadow: $card-shadow;
+  padding: 20px;
+  border-left: 4px solid transparent;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $card-shadow-hover;
+    transform: translateY(-1px);
+  }
+
+  &--uploaded { border-left-color: $status-uploaded; }
+  &--reviewing { border-left-color: $status-reviewing; }
+  &--verified { border-left-color: $status-verified; }
+  &--rejected { border-left-color: $status-rejected; }
+  &--expired { border-left-color: $status-expired; }
+
+  .document-card__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    .document-card__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: $td-primary-50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+
+      mat-icon {
+        color: $td-primary-500;
+      }
+    }
+
+    .document-card__title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #263238;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .document-card__type {
+      font-size: 12px;
+      color: #78909C;
+      margin-top: 2px;
+    }
+  }
+
+  .document-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: #78909C;
+
+    .document-card__meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+    }
+  }
+
+  .document-card__expiry {
+    &--warning {
+      color: $status-reviewing;
+    }
+
+    &--danger {
+      color: $td-warn-500;
+    }
+  }
+
+  .document-card__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid $border-color;
+  }
+}

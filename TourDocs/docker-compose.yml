@@ -1,0 +1,164 @@
+# =============================================================================
+# TourDocs Docker Compose
+# Development and production orchestration
+# =============================================================================
+
+version: "3.9"
+
+services:
+  # ===========================================================================
+  # SQL Server Database
+  # ===========================================================================
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: tourdocs-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SA_PASSWORD:-TourDocs_Dev_P@ss2024!}"
+      MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: 2048
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - tourdocs-network
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -Q "SELECT 1" -C -b
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Redis Cache
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: tourdocs-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - tourdocs-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TourDocs API (.NET Core 8)
+  # ===========================================================================
+  tourdocs-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tourdocs-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://+:7001"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=TourDocs;User Id=sa;Password=${SA_PASSWORD:-TourDocs_Dev_P@ss2024!};TrustServerCertificate=True;MultipleActiveResultSets=True"
+      Redis__ConnectionString: "redis:6379"
+      Jwt__Secret: "${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast256BitsLongForHmacSha256Signing!}"
+      Jwt__Issuer: "TourDocs"
+      Jwt__Audience: "TourDocs"
+      Jwt__AccessTokenExpirationMinutes: "15"
+      Jwt__RefreshTokenExpirationDays: "7"
+      FileStorage__BasePath: "/app/storage"
+      Seq__ServerUrl: "http://seq:5341"
+      Email__SendGridApiKey: "${SENDGRID_API_KEY:-}"
+      Hangfire__DashboardEnabled: "true"
+    ports:
+      - "7001:7001"
+    volumes:
+      - api-storage:/app/storage
+      - api-logs:/app/logs
+    networks:
+      - tourdocs-network
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
+  # ===========================================================================
+  # TourDocs Web (Angular 18)
+  # ===========================================================================
+  tourdocs-web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        API_URL: "http://localhost:7001"
+    container_name: tourdocs-web
+    ports:
+      - "4200:80"
+    networks:
+      - tourdocs-network
+    depends_on:
+      tourdocs-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Seq (Structured Logging)
+  # ===========================================================================
+  seq:
+    image: datalust/seq:latest
+    container_name: tourdocs-seq
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINPASSWORDHASH: "${SEQ_ADMIN_PASSWORD_HASH:-}"
+    ports:
+      - "5341:80"
+      - "5342:5341"
+    volumes:
+      - seq-data:/data
+    networks:
+      - tourdocs-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  tourdocs-network:
+    driver: bridge
+    name: tourdocs-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  sqlserver-data:
+    name: tourdocs-sqlserver-data
+  redis-data:
+    name: tourdocs-redis-data
+  api-storage:
+    name: tourdocs-api-storage
+  api-logs:
+    name: tourdocs-api-logs
+  seq-data:
+    name: tourdocs-seq-data

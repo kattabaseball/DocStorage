@@ -1,0 +1,67 @@
+// Primary - Deep Blue
+$td-primary-50: #E3F2FD;
+$td-primary-100: #BBDEFB;
+$td-primary-200: #90CAF9;
+$td-primary-300: #64B5F6;
+$td-primary-400: #42A5F5;
+$td-primary-500: #1565C0;
+$td-primary-600: #1258A7;
+$td-primary-700: #0D47A1;
+$td-primary-800: #0A3A85;
+$td-primary-900: #062E6A;
+
+// Accent - Teal
+$td-accent-500: #00897B;
+$td-accent-700: #00695C;
+$td-accent-100: #B2DFDB;
+
+// Warn
+$td-warn-500: #F44336;
+
+// Status Colors
+$status-uploaded: #42A5F5;
+$status-reviewing: #FFA726;
+$status-verified: #66BB6A;
+$status-rejected: #EF5350;
+$status-expired: #BDBDBD;
+
+// Hard Copy Status
+$hc-with-member: #90CAF9;
+$hc-collected: #FFE082;
+$hc-with-handler: #CE93D8;
+$hc-at-authority: #EF5350;
+$hc-returned: #A5D6A7;
+
+// Layout
+$sidebar-width: 260px;
+$sidebar-collapsed-width: 64px;
+$toolbar-height: 64px;
+$footer-height: 48px;
+
+// Sidebar
+$bg-sidebar: #263238;
+$bg-sidebar-hover: #37474F;
+$bg-sidebar-active: #1565C0;
+$sidebar-text: #B0BEC5;
+$sidebar-text-active: #FFFFFF;
+
+// Backgrounds
+$bg-light: #FAFAFA;
+$bg-card: #FFFFFF;
+
+// Borders
+$border-color: #E0E0E0;
+$border-radius: 8px;
+
+// Shadows
+$card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+$card-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+
+// Typography
+$font-family: 'Inter', 'Roboto', sans-serif;
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
