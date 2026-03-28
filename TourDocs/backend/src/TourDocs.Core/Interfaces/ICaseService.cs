@@ -12,6 +12,9 @@ public interface ICaseService
     Task<CaseResponse> CreateAsync(CreateCaseRequest request);
     Task<CaseResponse> GetByIdAsync(Guid id);
     Task AssignMembersAsync(Guid caseId, IEnumerable<Guid> memberIds);
+    Task<CaseResponse> UpdateAsync(Guid id, UpdateCaseRequest request);
+    Task DeleteAsync(Guid id);
+    Task RemoveMemberAsync(Guid caseId, Guid memberId);
     Task<double> GetReadinessPercentageAsync(Guid caseId);
     Task GrantAccessAsync(Guid caseId, GrantAccessRequest request);
     Task RevokeAccessAsync(Guid caseAccessId);

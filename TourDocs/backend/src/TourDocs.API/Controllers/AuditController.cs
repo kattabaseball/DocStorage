@@ -54,8 +54,9 @@ public class AuditController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AuditLogResponse>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByEntity(string entityType, Guid entityId)
     {
+        var orgId = _currentUserService.OrganizationId!.Value;
         var logs = await _unitOfWork.AuditLogs.FindAsync(
-            a => a.EntityType == entityType && a.EntityId == entityId);
+            a => a.OrganizationId == orgId && a.EntityType == entityType && a.EntityId == entityId);
 
         var result = _mapper.Map<IReadOnlyList<AuditLogResponse>>(
             logs.OrderByDescending(a => a.CreatedAt).ToList());
@@ -69,7 +70,8 @@ public class AuditController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<AuditLogResponse>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByUser(Guid userId, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
-        var logs = await _unitOfWork.AuditLogs.FindAsync(a => a.UserId == userId);
+        var orgId = _currentUserService.OrganizationId!.Value;
+        var logs = await _unitOfWork.AuditLogs.FindAsync(a => a.OrganizationId == orgId && a.UserId == userId);
 
         var paged = logs
             .OrderByDescending(a => a.CreatedAt)

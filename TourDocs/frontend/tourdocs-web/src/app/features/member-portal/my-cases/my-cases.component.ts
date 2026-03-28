@@ -79,7 +79,7 @@ interface MyCase {
                 </mat-progress-bar>
               </div>
 
-              <button mat-stroked-button color="primary" [routerLink]="['/portal/my-documents']" class="mt-16">
+              <button mat-stroked-button color="primary" [routerLink]="['/portal/my-documents']" [queryParams]="{caseId: c.id}" class="mt-16">
                 View Required Documents
               </button>
             </mat-card>

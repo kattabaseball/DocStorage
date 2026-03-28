@@ -554,7 +554,7 @@ export class SubscriptionComponent implements OnInit {
     this.updating = true;
     this.updatingPlan = planValue;
 
-    this.api.put<SubscriptionResponse>('api/v1/subscription', { plan: planValue }).subscribe({
+    this.api.put<SubscriptionResponse>('subscription', { plan: planValue }).subscribe({
       next: (response) => {
         if (response.success) {
           this.subscription = response.data;
@@ -573,7 +573,7 @@ export class SubscriptionComponent implements OnInit {
   private loadData(): void {
     this.loading = true;
 
-    this.api.get<SubscriptionResponse>('api/v1/subscription').subscribe({
+    this.api.get<SubscriptionResponse>('subscription').subscribe({
       next: (response) => {
         if (response.success) {
           this.subscription = response.data;
@@ -587,7 +587,7 @@ export class SubscriptionComponent implements OnInit {
   }
 
   private loadUsage(): void {
-    this.api.get<SubscriptionUsageResponse>('api/v1/subscription/usage').subscribe({
+    this.api.get<SubscriptionUsageResponse>('subscription/usage').subscribe({
       next: (response) => {
         if (response.success) {
           this.usage = response.data;

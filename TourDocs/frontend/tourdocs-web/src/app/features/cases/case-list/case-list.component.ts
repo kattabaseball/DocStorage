@@ -9,11 +9,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import { CasesService } from '../cases.service';
+import { NotificationService } from '@core/services/notification.service';
 import { Case } from '../cases.models';
 import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
 
@@ -23,6 +26,7 @@ import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
   imports: [
     CommonModule, RouterModule, MatTableModule, MatPaginatorModule, MatSortModule,
     MatButtonModule, MatIconModule, MatMenuModule, MatProgressSpinnerModule, MatProgressBarModule,
+    MatDialogModule,
     PageHeaderComponent, SearchInputComponent, StatusBadgeComponent, EmptyStateComponent
   ],
   template: `
@@ -120,6 +124,8 @@ import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
 export class CaseListComponent implements OnInit {
   private readonly casesService = inject(CasesService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly notification = inject(NotificationService);
 
   cases: Case[] = [];
   totalCount = 0;
@@ -141,5 +147,25 @@ export class CaseListComponent implements OnInit {
   onSort(s: Sort): void { this.params = { ...this.params, sortBy: s.active, sortDirection: s.direction as 'asc' | 'desc', pageNumber: 1 }; this.loadCases(); }
   onPage(e: PageEvent): void { this.params = { ...this.params, pageNumber: e.pageIndex + 1, pageSize: e.pageSize }; this.loadCases(); }
   viewCase(c: Case): void { this.router.navigate(['/cases', c.id]); }
-  deleteCase(c: Case): void { if (confirm(`Delete case "${c.name}"?`)) { this.casesService.deleteCase(c.id).subscribe(() => this.loadCases()); } }
+  deleteCase(c: Case): void {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete Case',
+        message: `Are you sure you want to delete "${c.name}"?`,
+        confirmText: 'Delete',
+        color: 'warn'
+      }
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.casesService.deleteCase(c.id).subscribe({
+          next: () => {
+            this.notification.showSuccess('Case deleted');
+            this.loadCases();
+          },
+          error: () => this.notification.showError('Failed to delete case')
+        });
+      }
+    });
+  }
 }

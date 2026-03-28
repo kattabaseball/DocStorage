@@ -20,7 +20,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           notificationService.showError(errorMessage);
           break;
         case 401:
-          // Handled by JWT interceptor
+          // JWT interceptor handles refresh. If we still get 401, session expired.
+          notificationService.showWarning('Your session has expired. Please log in again.');
           break;
         case 403:
           errorMessage = 'You do not have permission to perform this action.';

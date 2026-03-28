@@ -16,4 +16,6 @@ public class NotificationResponse
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }
     public DateTime SentAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string? Link { get; set; }
 }

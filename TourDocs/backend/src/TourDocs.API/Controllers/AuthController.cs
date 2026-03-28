@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using TourDocs.Core.DTOs.Auth;
 using TourDocs.Core.DTOs.Common;
 using TourDocs.Core.Interfaces;
@@ -25,6 +26,7 @@ public class AuthController : ControllerBase
     /// Authenticates a user and returns JWT tokens.
     /// </summary>
     [HttpPost("login")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -37,6 +39,7 @@ public class AuthController : ControllerBase
     /// Registers a new user and creates their organization.
     /// </summary>
     [HttpPost("register")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(typeof(ApiResponse<AuthResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
@@ -103,6 +106,7 @@ public class AuthController : ControllerBase
     /// Initiates a password reset by sending a reset link to the user's email.
     /// </summary>
     [HttpPost("forgot-password")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
@@ -115,6 +119,7 @@ public class AuthController : ControllerBase
     /// Resets a user's password using a valid reset token.
     /// </summary>
     [HttpPost("reset-password")]
+    [EnableRateLimiting("auth")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)

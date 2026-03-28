@@ -61,6 +61,31 @@ public class CasesController : ControllerBase
     }
 
     /// <summary>
+    /// Updates an existing case.
+    /// </summary>
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<CaseResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCaseRequest request)
+    {
+        var result = await _caseService.UpdateAsync(id, request);
+        return Ok(ApiResponse<CaseResponse>.SuccessResult(result, "Case updated."));
+    }
+
+    /// <summary>
+    /// Deletes a case (soft delete).
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _caseService.DeleteAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Assigns members to a case.
     /// </summary>
     [HttpPost("{id:guid}/members")]
@@ -68,6 +93,18 @@ public class CasesController : ControllerBase
     public async Task<IActionResult> AssignMembers(Guid id, [FromBody] List<Guid> memberIds)
     {
         await _caseService.AssignMembersAsync(id, memberIds);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Removes a member from a case.
+    /// </summary>
+    [HttpDelete("{id:guid}/members/{memberId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoveMember(Guid id, Guid memberId)
+    {
+        await _caseService.RemoveMemberAsync(id, memberId);
         return NoContent();
     }
 

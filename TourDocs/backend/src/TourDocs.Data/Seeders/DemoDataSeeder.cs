@@ -52,6 +52,13 @@ public static class DemoDataSeeder
 
     public static async Task SeedAsync(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
     {
+        // Safety: never seed demo data outside the Development environment
+        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        if (env != "Development")
+        {
+            return; // Never seed demo data outside development
+        }
+
         if (await context.Organizations.AnyAsync(o => o.Id == OrgId))
         {
             return; // Already seeded

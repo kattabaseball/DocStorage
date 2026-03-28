@@ -181,6 +181,111 @@ public class CaseService : ICaseService
         }
     }
 
+    public async Task<CaseResponse> UpdateAsync(Guid id, UpdateCaseRequest request)
+    {
+        var caseEntity = await _unitOfWork.Cases.FirstOrDefaultAsync(
+            c => c.Id == id && c.OrganizationId == _tenantContext.OrganizationId);
+
+        if (caseEntity == null)
+        {
+            throw new NotFoundException("Case", id);
+        }
+
+        caseEntity.Name = request.Name;
+        caseEntity.Description = request.Description;
+        caseEntity.CaseType = request.CaseType;
+        caseEntity.DestinationCountry = request.DestinationCountry;
+        caseEntity.DestinationCity = request.DestinationCity;
+        caseEntity.StartDate = request.StartDate;
+        caseEntity.EndDate = request.EndDate;
+        caseEntity.ChecklistId = request.ChecklistId;
+        caseEntity.ContactName = request.ContactName;
+        caseEntity.ContactEmail = request.ContactEmail;
+        caseEntity.ContactPhone = request.ContactPhone;
+        caseEntity.Notes = request.Notes;
+        caseEntity.UpdatedAt = DateTime.UtcNow;
+        caseEntity.UpdatedBy = _tenantContext.UserId;
+
+        _unitOfWork.Cases.Update(caseEntity);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            _tenantContext.OrganizationId,
+            _tenantContext.UserId,
+            "Case.Updated",
+            "Case",
+            caseEntity.Id,
+            $"Updated case: {caseEntity.Name} ({caseEntity.ReferenceNumber})");
+
+        _logger.LogInformation("Case {CaseId} updated in organization {OrgId}", caseEntity.Id, _tenantContext.OrganizationId);
+
+        var memberCount = await _unitOfWork.CaseMembers.CountAsync(cm => cm.CaseId == id);
+        var readiness = await CalculateReadinessAsync(caseEntity);
+
+        return MapToResponse(caseEntity, memberCount, readiness);
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var caseEntity = await _unitOfWork.Cases.FirstOrDefaultAsync(
+            c => c.Id == id && c.OrganizationId == _tenantContext.OrganizationId);
+
+        if (caseEntity == null)
+        {
+            throw new NotFoundException("Case", id);
+        }
+
+        caseEntity.IsDeleted = true;
+        caseEntity.DeletedAt = DateTime.UtcNow;
+        caseEntity.UpdatedAt = DateTime.UtcNow;
+        caseEntity.UpdatedBy = _tenantContext.UserId;
+
+        _unitOfWork.Cases.Update(caseEntity);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            _tenantContext.OrganizationId,
+            _tenantContext.UserId,
+            "Case.Deleted",
+            "Case",
+            caseEntity.Id,
+            $"Deleted case: {caseEntity.Name} ({caseEntity.ReferenceNumber})");
+
+        _logger.LogInformation("Case {CaseId} soft-deleted in organization {OrgId}", caseEntity.Id, _tenantContext.OrganizationId);
+    }
+
+    public async Task RemoveMemberAsync(Guid caseId, Guid memberId)
+    {
+        var caseEntity = await _unitOfWork.Cases.FirstOrDefaultAsync(
+            c => c.Id == caseId && c.OrganizationId == _tenantContext.OrganizationId);
+
+        if (caseEntity == null)
+        {
+            throw new NotFoundException("Case", caseId);
+        }
+
+        var caseMember = await _unitOfWork.CaseMembers.FirstOrDefaultAsync(
+            cm => cm.CaseId == caseId && cm.MemberId == memberId);
+
+        if (caseMember == null)
+        {
+            throw new NotFoundException("CaseMember", memberId);
+        }
+
+        _unitOfWork.CaseMembers.Remove(caseMember);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            _tenantContext.OrganizationId,
+            _tenantContext.UserId,
+            "Case.MemberRemoved",
+            "Case",
+            caseId,
+            $"Removed member {memberId} from case: {caseEntity.Name}");
+
+        _logger.LogInformation("Member {MemberId} removed from case {CaseId}", memberId, caseId);
+    }
+
     public async Task<double> GetReadinessPercentageAsync(Guid caseId)
     {
         var caseEntity = await _unitOfWork.Cases.FirstOrDefaultAsync(

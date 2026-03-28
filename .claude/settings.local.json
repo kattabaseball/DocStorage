@@ -63,7 +63,8 @@
       "WebFetch(domain:stackblitz.com)",
       "WebFetch(domain:medium.com)",
       "WebFetch(domain:www.bbogdanov.dev)",
-      "Bash(grep -c \"cdk-overlay-container\" dist/tourdocs-web/browser/styles*.css)"
+      "Bash(grep -c \"cdk-overlay-container\" dist/tourdocs-web/browser/styles*.css)",
+      "Bash(xargs grep:*)"
     ]
   }
 }

@@ -16,6 +16,7 @@ public class Notification : BaseEntity
     public string? EntityType { get; set; }
     public Guid? EntityId { get; set; }
     public string? Channel { get; set; }
+    public string? Link { get; set; }
     public bool IsRead { get; set; }
     public DateTime? ReadAt { get; set; }
     public DateTime SentAt { get; set; } = DateTime.UtcNow;

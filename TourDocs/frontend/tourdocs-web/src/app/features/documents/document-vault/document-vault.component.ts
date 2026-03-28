@@ -7,6 +7,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
 import { DocumentCardComponent, DocumentCardData } from '@shared/components/document-card/document-card.component';
@@ -22,7 +23,7 @@ import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
   standalone: true,
   imports: [
     CommonModule, MatButtonModule, MatIconModule, MatSelectModule, MatFormFieldModule,
-    MatDialogModule, MatProgressSpinnerModule,
+    MatDialogModule, MatProgressSpinnerModule, MatPaginatorModule,
     PageHeaderComponent, SearchInputComponent, DocumentCardComponent, EmptyStateComponent
   ],
   template: `
@@ -87,6 +88,13 @@ import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
             </div>
           </div>
         }
+
+        <mat-paginator [length]="totalCount"
+                       [pageSize]="pageSize"
+                       [pageSizeOptions]="[25, 50, 100]"
+                       (page)="onPage($event)"
+                       showFirstLastButtons>
+        </mat-paginator>
       }
     </div>
   `,
@@ -132,6 +140,9 @@ export class DocumentVaultComponent implements OnInit {
   selectedCategory = '';
   selectedStatus = '';
   searchQuery = '';
+  totalCount = 0;
+  pageSize = 25;
+  currentPage = 0;
 
   ngOnInit(): void {
     this.loadDocuments();
@@ -139,13 +150,14 @@ export class DocumentVaultComponent implements OnInit {
 
   loadDocuments(): void {
     this.loading = true;
-    const params: QueryParams = { ...DEFAULT_PAGINATION, pageSize: 100 };
+    const params: QueryParams = { ...DEFAULT_PAGINATION, pageSize: this.pageSize, pageNumber: this.currentPage + 1 };
     if (this.searchQuery) params.search = this.searchQuery;
 
     this.documentsService.getDocuments(params).subscribe({
       next: (response) => {
         if (response.success) {
           this.documents = response.data.items;
+          this.totalCount = response.data.totalCount;
           this.groupDocuments();
         }
         this.loading = false;
@@ -156,6 +168,13 @@ export class DocumentVaultComponent implements OnInit {
 
   onSearch(query: string): void {
     this.searchQuery = query;
+    this.currentPage = 0;
+    this.loadDocuments();
+  }
+
+  onPage(event: PageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
     this.loadDocuments();
   }
 

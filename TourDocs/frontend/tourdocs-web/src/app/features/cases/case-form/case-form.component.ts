@@ -158,7 +158,10 @@ export class CaseFormComponent implements OnInit {
           this.notification.showSuccess(this.isEdit ? 'Case updated' : 'Case created');
           this.router.navigate(['/cases']);
         },
-        error: () => { this.saving = false; }
+        error: () => {
+          this.saving = false;
+          this.notification.showError('Failed to save case. Please try again.');
+        }
       });
     }
   }

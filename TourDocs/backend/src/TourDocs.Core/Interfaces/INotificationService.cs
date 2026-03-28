@@ -13,4 +13,24 @@ public interface INotificationService
     Task MarkAsReadAsync(Guid notificationId);
     Task MarkAllAsReadAsync(Guid userId);
     Task SendAsync(CreateNotificationRequest request);
+
+    /// <summary>
+    /// Sends a notification informing a user that a document has been verified.
+    /// </summary>
+    Task SendDocumentVerifiedAsync(Guid organizationId, Guid userId, string documentTitle, string memberName);
+
+    /// <summary>
+    /// Sends a notification informing a user that a document has been rejected.
+    /// </summary>
+    Task SendDocumentRejectedAsync(Guid organizationId, Guid userId, string documentTitle, string reason);
+
+    /// <summary>
+    /// Sends a notification warning a user that a document is about to expire.
+    /// </summary>
+    Task SendDocumentExpiringAsync(Guid organizationId, Guid userId, string documentTitle, int daysLeft);
+
+    /// <summary>
+    /// Deletes read notifications that are older than the specified cutoff date.
+    /// </summary>
+    Task DeleteOldNotificationsAsync(DateTime cutoff);
 }

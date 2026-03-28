@@ -16,4 +16,6 @@ public interface IDocumentService
     Task<IReadOnlyList<DocumentResponse>> GetExpiringDocumentsAsync(int daysThreshold = 30);
     Task<Stream> DownloadAsync(Guid id);
     Task<DocumentResponse> ReuploadAsync(Guid documentId, UploadDocumentRequest request);
+    Task DeleteAsync(Guid id);
+    Task<IReadOnlyList<DocumentResponse>> GetByMemberAsync(Guid memberId);
 }

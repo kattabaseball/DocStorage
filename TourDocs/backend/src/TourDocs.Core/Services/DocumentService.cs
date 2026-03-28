@@ -337,6 +337,58 @@ public class DocumentService : IDocumentService
         return MapToResponse(document, member!, totalVersions, newVersion.VersionNumber);
     }
 
+    public async Task DeleteAsync(Guid id)
+    {
+        var document = await _unitOfWork.Documents.FirstOrDefaultAsync(
+            d => d.Id == id && d.OrganizationId == _tenantContext.OrganizationId);
+
+        if (document == null)
+        {
+            throw new NotFoundException("Document", id);
+        }
+
+        document.IsDeleted = true;
+        document.DeletedAt = DateTime.UtcNow;
+        document.UpdatedAt = DateTime.UtcNow;
+        document.UpdatedBy = _tenantContext.UserId;
+
+        _unitOfWork.Documents.Update(document);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _auditService.LogAsync(
+            _tenantContext.OrganizationId,
+            _tenantContext.UserId,
+            "Document.Deleted",
+            "Document",
+            document.Id,
+            $"Deleted document: {document.Title}");
+
+        _logger.LogInformation("Document {DocumentId} soft-deleted by {UserId}", document.Id, _tenantContext.UserId);
+    }
+
+    public async Task<IReadOnlyList<DocumentResponse>> GetByMemberAsync(Guid memberId)
+    {
+        var member = await _unitOfWork.Members.GetByIdAsync(memberId);
+        if (member == null)
+        {
+            throw new NotFoundException("Member", memberId);
+        }
+
+        var documents = await _unitOfWork.Documents.FindAsync(
+            d => d.MemberId == memberId &&
+                 d.OrganizationId == _tenantContext.OrganizationId &&
+                 !d.IsDeleted);
+
+        var responses = new List<DocumentResponse>();
+        foreach (var doc in documents)
+        {
+            var versionCount = await _unitOfWork.DocumentVersions.CountAsync(v => v.DocumentId == doc.Id);
+            responses.Add(MapToResponse(doc, member, versionCount, versionCount));
+        }
+
+        return responses;
+    }
+
     private static DocumentResponse MapToResponse(Document document, Member member, int versionCount, int currentVersion)
     {
         return new DocumentResponse

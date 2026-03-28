@@ -31,139 +31,145 @@ import { MembersService } from '../members.service';
                       [breadcrumbs]="[{label: 'Home', link: '/', icon: 'home'}, {label: 'Members', link: '/members'}, {label: isEditMode ? 'Edit' : 'New Member'}]">
       </td-page-header>
 
-      <form [formGroup]="memberForm" (ngSubmit)="onSubmit()" class="form-container">
-        <mat-card class="form-card">
-          <div class="form-section">
-            <h3 class="form-section__title">Personal Information</h3>
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>First Name</mat-label>
-                <input matInput formControlName="firstName">
-                @if (memberForm.get('firstName')?.hasError('required') && memberForm.get('firstName')?.touched) {
-                  <mat-error>Required</mat-error>
-                }
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Last Name</mat-label>
-                <input matInput formControlName="lastName">
-                @if (memberForm.get('lastName')?.hasError('required') && memberForm.get('lastName')?.touched) {
-                  <mat-error>Required</mat-error>
-                }
-              </mat-form-field>
+      @if (!loading) {
+        <form [formGroup]="memberForm" (ngSubmit)="onSubmit()" class="form-container">
+          <mat-card class="form-card">
+            <div class="form-section">
+              <h3 class="form-section__title">Personal Information</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>First Name</mat-label>
+                  <input matInput formControlName="firstName">
+                  @if (memberForm.get('firstName')?.hasError('required') && memberForm.get('firstName')?.touched) {
+                    <mat-error>Required</mat-error>
+                  }
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Last Name</mat-label>
+                  <input matInput formControlName="lastName">
+                  @if (memberForm.get('lastName')?.hasError('required') && memberForm.get('lastName')?.touched) {
+                    <mat-error>Required</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Email</mat-label>
+                  <input matInput formControlName="email" type="email">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Phone</mat-label>
+                  <input matInput formControlName="phone">
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Date of Birth</mat-label>
+                  <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth">
+                  <mat-datepicker-toggle matIconSuffix [for]="dobPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #dobPicker></mat-datepicker>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Nationality</mat-label>
+                  <input matInput formControlName="nationality">
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Passport Number</mat-label>
+                  <input matInput formControlName="passportNumber">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Status</mat-label>
+                  <mat-select formControlName="status">
+                    <mat-option value="Active">Active</mat-option>
+                    <mat-option value="Inactive">Inactive</mat-option>
+                    <mat-option value="Suspended">Suspended</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
             </div>
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Email</mat-label>
-                <input matInput formControlName="email" type="email">
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Phone</mat-label>
-                <input matInput formControlName="phone">
-              </mat-form-field>
-            </div>
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Date of Birth</mat-label>
-                <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth">
-                <mat-datepicker-toggle matIconSuffix [for]="dobPicker"></mat-datepicker-toggle>
-                <mat-datepicker #dobPicker></mat-datepicker>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Nationality</mat-label>
-                <input matInput formControlName="nationality">
-              </mat-form-field>
-            </div>
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Passport Number</mat-label>
-                <input matInput formControlName="passportNumber">
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Status</mat-label>
-                <mat-select formControlName="status">
-                  <mat-option value="Active">Active</mat-option>
-                  <mat-option value="Inactive">Inactive</mat-option>
-                  <mat-option value="Suspended">Suspended</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-          </div>
-        </mat-card>
+          </mat-card>
 
-        <mat-card class="form-card">
-          <div class="form-section">
-            <h3 class="form-section__title">Organization</h3>
-            <div class="form-row">
+          <mat-card class="form-card">
+            <div class="form-section">
+              <h3 class="form-section__title">Organization</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Department</mat-label>
+                  <input matInput formControlName="department">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Position</mat-label>
+                  <input matInput formControlName="position">
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-card>
+
+          <mat-card class="form-card">
+            <div class="form-section">
+              <h3 class="form-section__title">Address</h3>
               <mat-form-field appearance="outline">
-                <mat-label>Department</mat-label>
-                <input matInput formControlName="department">
+                <mat-label>Address</mat-label>
+                <input matInput formControlName="address">
               </mat-form-field>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>City</mat-label>
+                  <input matInput formControlName="city">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Country</mat-label>
+                  <input matInput formControlName="country">
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-card>
+
+          <mat-card class="form-card">
+            <div class="form-section">
+              <h3 class="form-section__title">Emergency Contact</h3>
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Contact Name</mat-label>
+                  <input matInput formControlName="emergencyContactName">
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Contact Phone</mat-label>
+                  <input matInput formControlName="emergencyContactPhone">
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-card>
+
+          <mat-card class="form-card">
+            <div class="form-section">
+              <h3 class="form-section__title">Notes</h3>
               <mat-form-field appearance="outline">
-                <mat-label>Position</mat-label>
-                <input matInput formControlName="position">
+                <mat-label>Additional Notes</mat-label>
+                <textarea matInput formControlName="notes" rows="4"></textarea>
               </mat-form-field>
             </div>
-          </div>
-        </mat-card>
+          </mat-card>
 
-        <mat-card class="form-card">
-          <div class="form-section">
-            <h3 class="form-section__title">Address</h3>
-            <mat-form-field appearance="outline">
-              <mat-label>Address</mat-label>
-              <input matInput formControlName="address">
-            </mat-form-field>
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>City</mat-label>
-                <input matInput formControlName="city">
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Country</mat-label>
-                <input matInput formControlName="country">
-              </mat-form-field>
-            </div>
+          <div class="form-actions">
+            <button mat-button type="button" routerLink="/members">Cancel</button>
+            <button mat-flat-button color="primary" type="submit"
+                    [disabled]="memberForm.invalid || saving">
+              @if (saving) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else {
+                {{ isEditMode ? 'Update Member' : 'Create Member' }}
+              }
+            </button>
           </div>
-        </mat-card>
-
-        <mat-card class="form-card">
-          <div class="form-section">
-            <h3 class="form-section__title">Emergency Contact</h3>
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Contact Name</mat-label>
-                <input matInput formControlName="emergencyContactName">
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Contact Phone</mat-label>
-                <input matInput formControlName="emergencyContactPhone">
-              </mat-form-field>
-            </div>
-          </div>
-        </mat-card>
-
-        <mat-card class="form-card">
-          <div class="form-section">
-            <h3 class="form-section__title">Notes</h3>
-            <mat-form-field appearance="outline">
-              <mat-label>Additional Notes</mat-label>
-              <textarea matInput formControlName="notes" rows="4"></textarea>
-            </mat-form-field>
-          </div>
-        </mat-card>
-
-        <div class="form-actions">
-          <button mat-button type="button" routerLink="/members">Cancel</button>
-          <button mat-flat-button color="primary" type="submit"
-                  [disabled]="memberForm.invalid || saving">
-            @if (saving) {
-              <mat-spinner diameter="20"></mat-spinner>
-            } @else {
-              {{ isEditMode ? 'Update Member' : 'Create Member' }}
-            }
-          </button>
+        </form>
+      } @else {
+        <div class="loading-container">
+          <mat-spinner></mat-spinner>
         </div>
-      </form>
+      }
     </div>
   `
 })
@@ -177,6 +183,7 @@ export class MemberFormComponent implements OnInit {
   memberForm!: FormGroup;
   isEditMode = false;
   saving = false;
+  loading = false;
   memberId: string | null = null;
 
   ngOnInit(): void {
@@ -203,11 +210,17 @@ export class MemberFormComponent implements OnInit {
     });
 
     if (this.isEditMode && this.memberId) {
+      this.loading = true;
       this.membersService.getMember(this.memberId).subscribe({
         next: (response) => {
+          this.loading = false;
           if (response.success) {
             this.memberForm.patchValue(response.data);
           }
+        },
+        error: () => {
+          this.loading = false;
+          this.notification.showError('Failed to load member');
         }
       });
     }
@@ -229,6 +242,7 @@ export class MemberFormComponent implements OnInit {
         },
         error: () => {
           this.saving = false;
+          this.notification.showError('Failed to save member. Please try again.');
         }
       });
     }

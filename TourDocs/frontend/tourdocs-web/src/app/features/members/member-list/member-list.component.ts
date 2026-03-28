@@ -9,12 +9,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { SearchInputComponent } from '@shared/components/search-input/search-input.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ConfirmDialogComponent } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import { MembersService } from '../members.service';
+import { NotificationService } from '@core/services/notification.service';
 import { Member } from '../members.models';
 import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
 
@@ -24,6 +27,7 @@ import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
   imports: [
     CommonModule, RouterModule, MatTableModule, MatPaginatorModule, MatSortModule,
     MatButtonModule, MatIconModule, MatMenuModule, MatProgressSpinnerModule, MatProgressBarModule,
+    MatDialogModule,
     PageHeaderComponent, SearchInputComponent, AvatarComponent, StatusBadgeComponent, EmptyStateComponent
   ],
   template: `
@@ -159,6 +163,8 @@ import { DEFAULT_PAGINATION, QueryParams } from '@core/models/pagination.model';
 export class MemberListComponent implements OnInit {
   private readonly membersService = inject(MembersService);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
+  private readonly notification = inject(NotificationService);
 
   members: Member[] = [];
   totalCount = 0;
@@ -215,10 +221,24 @@ export class MemberListComponent implements OnInit {
   }
 
   deleteMember(member: Member): void {
-    if (confirm(`Are you sure you want to delete ${member.fullName}?`)) {
-      this.membersService.deleteMember(member.id).subscribe({
-        next: () => this.loadMembers()
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Delete Member',
+        message: `Are you sure you want to delete ${member.fullName}?`,
+        confirmText: 'Delete',
+        color: 'warn'
+      }
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.membersService.deleteMember(member.id).subscribe({
+          next: () => {
+            this.notification.showSuccess('Member deleted');
+            this.loadMembers();
+          },
+          error: () => this.notification.showError('Failed to delete member')
+        });
+      }
+    });
   }
 }

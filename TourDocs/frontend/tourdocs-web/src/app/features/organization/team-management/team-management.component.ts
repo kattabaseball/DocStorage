@@ -11,10 +11,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { filter, switchMap } from 'rxjs';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { AvatarComponent } from '@shared/components/avatar/avatar.component';
 import { StatusBadgeComponent } from '@shared/components/status-badge/status-badge.component';
 import { EmptyStateComponent } from '@shared/components/empty-state/empty-state.component';
+import { ConfirmDialogComponent, ConfirmDialogData } from '@shared/components/confirm-dialog/confirm-dialog.component';
 import { ApiService } from '@core/services/api.service';
 import { NotificationService } from '@core/services/notification.service';
 
@@ -116,9 +118,9 @@ interface TeamMember {
                   <mat-icon>more_vert</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
-                  <button mat-menu-item><mat-icon>edit</mat-icon> Change Role</button>
-                  <button mat-menu-item><mat-icon>block</mat-icon> Deactivate</button>
-                  <button mat-menu-item><mat-icon>delete</mat-icon> Remove</button>
+                  <button mat-menu-item (click)="changeRole(m)"><mat-icon>edit</mat-icon> Change Role</button>
+                  <button mat-menu-item (click)="deactivateMember(m)"><mat-icon>block</mat-icon> Deactivate</button>
+                  <button mat-menu-item (click)="removeMember(m)"><mat-icon>delete</mat-icon> Remove</button>
                 </mat-menu>
               </td>
             </ng-container>
@@ -141,6 +143,7 @@ interface TeamMember {
 export class TeamManagementComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(ApiService);
+  private readonly dialog = inject(MatDialog);
   private readonly notification = inject(NotificationService);
 
   teamMembers: TeamMember[] = [];
@@ -178,5 +181,88 @@ export class TeamManagementComponent implements OnInit {
         error: () => { this.inviting = false; }
       });
     }
+  }
+
+  changeRole(member: TeamMember): void {
+    const availableRoles = ['OrgOwner', 'OrgAdmin', 'OrgMember', 'OrgViewer'];
+    const newRole = window.prompt(
+      `Change role for ${member.name}\n\nAvailable roles: ${availableRoles.join(', ')}\n\nCurrent role: ${member.role}`,
+      member.role
+    );
+
+    if (!newRole || newRole === member.role) {
+      return;
+    }
+
+    if (!availableRoles.includes(newRole)) {
+      this.notification.showError('Invalid role selected');
+      return;
+    }
+
+    this.api.put('organization/team/' + member.id + '/role', { role: newRole }).subscribe({
+      next: () => {
+        this.notification.showSuccess(`Role updated to ${newRole}`);
+        this.loadTeam();
+      },
+      error: (err) => {
+        this.notification.showError(err?.error?.message || 'Failed to change role');
+      }
+    });
+  }
+
+  deactivateMember(member: TeamMember): void {
+    const dialogRef = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+      ConfirmDialogComponent,
+      {
+        data: {
+          title: 'Deactivate Member',
+          message: `Are you sure you want to deactivate ${member.name}? They will lose access to the organization.`,
+          confirmText: 'Deactivate',
+          color: 'primary'
+        },
+        width: '420px'
+      }
+    );
+
+    dialogRef.afterClosed().pipe(
+      filter((confirmed) => !!confirmed),
+      switchMap(() => this.api.put('organization/team/' + member.id + '/deactivate', {}))
+    ).subscribe({
+      next: () => {
+        this.notification.showSuccess(`${member.name} has been deactivated`);
+        this.loadTeam();
+      },
+      error: (err) => {
+        this.notification.showError(err?.error?.message || 'Failed to deactivate member');
+      }
+    });
+  }
+
+  removeMember(member: TeamMember): void {
+    const dialogRef = this.dialog.open<ConfirmDialogComponent, ConfirmDialogData, boolean>(
+      ConfirmDialogComponent,
+      {
+        data: {
+          title: 'Remove Member',
+          message: `Are you sure you want to permanently remove ${member.name} from the organization? This action cannot be undone.`,
+          confirmText: 'Remove',
+          color: 'warn'
+        },
+        width: '420px'
+      }
+    );
+
+    dialogRef.afterClosed().pipe(
+      filter((confirmed) => !!confirmed),
+      switchMap(() => this.api.delete('organization/team/' + member.id))
+    ).subscribe({
+      next: () => {
+        this.notification.showSuccess(`${member.name} has been removed`);
+        this.loadTeam();
+      },
+      error: (err) => {
+        this.notification.showError(err?.error?.message || 'Failed to remove member');
+      }
+    });
   }
 }

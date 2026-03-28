@@ -58,6 +58,17 @@ public class DocumentsController : ControllerBase
         [FromForm] string documentType, [FromForm] string title, [FromForm] DateTime? expiryDate,
         [FromForm] bool isHardCopyNeeded, IFormFile file)
     {
+        if (file == null || file.Length == 0)
+            return BadRequest(ApiResponse<object>.Failure("File is required."));
+
+        if (file.Length > 52_428_800)
+            return BadRequest(ApiResponse<object>.Failure("File size cannot exceed 50MB."));
+
+        var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx" };
+        var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+        if (!allowedExtensions.Contains(extension))
+            return BadRequest(ApiResponse<object>.Failure($"File type '{extension}' is not allowed."));
+
         var request = new UploadDocumentRequest
         {
             MemberId = memberId,
@@ -141,6 +152,30 @@ public class DocumentsController : ControllerBase
 
         var result = await _documentService.ReuploadAsync(id, request);
         return Ok(ApiResponse<DocumentResponse>.SuccessResult(result, "Document version uploaded."));
+    }
+
+    /// <summary>
+    /// Deletes a document (soft delete).
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _documentService.DeleteAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Gets all documents for a specific member.
+    /// </summary>
+    [HttpGet("by-member/{memberId:guid}")]
+    [ProducesResponseType(typeof(ApiResponse<IReadOnlyList<DocumentResponse>>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetByMember(Guid memberId)
+    {
+        var result = await _documentService.GetByMemberAsync(memberId);
+        return Ok(ApiResponse<IReadOnlyList<DocumentResponse>>.SuccessResult(result));
     }
 
     /// <summary>
